@@ -39,3 +39,15 @@
 
 # debug information files
 *.dwo
+
+# Build directories
+build/
+build-*/
+_codeql_build_dir/
+_codeql_detected_source_root
+
+# CMake FetchContent cache
+_deps/
+
+# ImGui runtime state
+imgui.ini
