@@ -1,3 +1,0 @@
-/home/runner/work/pepc-viewer/pepc-viewer/_codeql_build_dir/_deps/implot-subbuild/CMakeFiles/implot-populate.dir
-/home/runner/work/pepc-viewer/pepc-viewer/_codeql_build_dir/_deps/implot-subbuild/CMakeFiles/edit_cache.dir
-/home/runner/work/pepc-viewer/pepc-viewer/_codeql_build_dir/_deps/implot-subbuild/CMakeFiles/rebuild_cache.dir

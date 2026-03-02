@@ -1,1 +1,0 @@
-/tmp/codeql-scratch-36fc035a36101bfd/dbs/cpp/working/autobuild/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/pepc-viewer.dir/link.d "CMakeFiles/pepc-viewer.dir/src/main.cpp.o" -o pepc-viewer  libimgui_lib.a libimplot_lib.a /usr/lib/x86_64-linux-gnu/libSDL2.so libimgui_lib.a /usr/lib/x86_64-linux-gnu/libGLX.so /usr/lib/x86_64-linux-gnu/libOpenGL.so
