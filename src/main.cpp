@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 #include <string>
 #include <vector>
 
@@ -41,19 +42,87 @@ static SpectrumPair  g_pair;
 // Sample data
 // ---------------------------------------------------------------------------
 
+static bool loadSpectrumFromFile(const char* path, Spectrum& out)
+{
+    std::ifstream in(path);
+    if (!in) {
+        SDL_Log("Failed to open spectrum file: %s", path);
+        return false;
+    }
+
+    std::string line;
+
+    // Line 1: Name: <text>
+    if (!std::getline(in, line)) return false;
+    const std::string namePrefix = "Name:";
+    if (line.rfind(namePrefix, 0) == 0) {
+        out.name = std::string(line.begin() + namePrefix.size(), line.end());
+        // trim leading spaces
+        while (!out.name.empty() && std::isspace(static_cast<unsigned char>(out.name.front())))
+            out.name.erase(out.name.begin());
+    }
+
+    // Line 2: MW: <value> (use as weight)
+    if (!std::getline(in, line)) return false;
+    const std::string mwPrefix = "MW:";
+    if (line.rfind(mwPrefix, 0) == 0) {
+        std::string mwStr(line.begin() + mwPrefix.size(), line.end());
+        out.weight = std::stod(mwStr);
+    }
+
+    // Line 3: Comment: ... (ignored)
+    if (!std::getline(in, line)) return false;
+
+    // Line 4: Num peaks: N (optional, we can ignore the value)
+    std::getline(in, line);
+
+    // Remaining lines: "mz intensity"
+    double mzVal = 0.0;
+    double intVal = 0.0;
+    out.mz.clear();
+    out.intensity.clear();
+    while (in >> mzVal >> intVal) {
+        out.mz.push_back(mzVal);
+        out.intensity.push_back(intVal);
+    }
+
+    out.id = path; // simple identifier
+
+    if (out.mz.empty()) {
+        SDL_Log("Spectrum file contained no peak data: %s", path);
+        return false;
+    }
+
+    return true;
+}
+
 static void setupExamplePair()
 {
-    Spectrum top(
-        "Spectrum A", "spec_001", 1.0,
-        {100.0, 150.0, 200.0, 250.0, 300.0, 350.0},
-        {  0.8,   0.6,   1.0,   0.4,   0.7,   0.3}
-    );
+    Spectrum top;
+    Spectrum bottom;
 
-    Spectrum bottom(
-        "Spectrum B", "spec_002", 1.0,
-        {100.0, 175.0, 200.0, 275.0, 300.0, 325.0},
-        {  0.9,   0.5,   0.8,   0.3,   0.6,   0.2}
-    );
+    // Paths are relative to the build directory: pepc-viewer/build* -> ../pepc/data/synth
+    const char* pathTop = "../pepc/data/synth/apo3.txt";
+    const char* pathBottom = "../pepc/data/synth/apoe4.txt";
+
+    bool okTop = loadSpectrumFromFile(pathTop, top);
+    bool okBottom = loadSpectrumFromFile(pathBottom, bottom);
+
+    if (!okTop || !okBottom) {
+        SDL_Log("Falling back to built-in example spectra");
+
+        top = Spectrum(
+            "Spectrum A", "spec_001", 1.0,
+            {100.0, 150.0, 200.0, 250.0, 300.0, 350.0},
+            {  0.8,   0.6,   1.0,   0.4,   0.7,   0.3}
+        );
+
+        bottom = Spectrum(
+            "Spectrum B", "spec_002", 1.0,
+            {100.0, 175.0, 200.0, 275.0, 300.0, 325.0},
+            {  0.9,   0.5,   0.8,   0.3,   0.6,   0.2}
+        );
+    }
 
     g_pair = SpectrumPair(std::move(top), std::move(bottom));
 }
