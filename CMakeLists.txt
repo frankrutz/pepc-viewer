@@ -29,22 +29,26 @@ FetchContent_MakeAvailable(implot)
 # Platform detection: Emscripten (WASM) vs. native desktop
 # ---------------------------------------------------------------------------
 if(EMSCRIPTEN)
+    # Emscripten toolchain: use the SDL2 port via its CMake config.
+    find_package(SDL2 REQUIRED CONFIG)
+
     set(BACKEND_SOURCES
         ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
         ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
     )
+
     set(PLATFORM_COMPILE_OPTIONS
-        -sUSE_SDL=2
     )
     set(PLATFORM_LINK_OPTIONS
-        -sUSE_SDL=2
-        -sUSE_WEBGL2=1
-        -sFULL_ES3=1
-        -sALLOW_MEMORY_GROWTH=1
+        - sALLOW_MEMORY_GROWTH=1
         --shell-file "${CMAKE_SOURCE_DIR}/shell.html"
+    )
+    set(PLATFORM_LIBS
+        SDL2::SDL2
     )
     set(OUTPUT_SUFFIX ".html")
 else()
+    # Native desktop build: system SDL2 + OpenGL.
     find_package(SDL2 REQUIRED)
     find_package(OpenGL REQUIRED)
 
@@ -72,11 +76,10 @@ add_library(imgui_lib STATIC
 target_include_directories(imgui_lib PUBLIC
     ${imgui_SOURCE_DIR}
     ${imgui_SOURCE_DIR}/backends
+    ${SDL2_INCLUDE_DIRS}
 )
 if(EMSCRIPTEN)
     target_compile_options(imgui_lib PUBLIC ${PLATFORM_COMPILE_OPTIONS})
-else()
-    target_include_directories(imgui_lib PUBLIC ${SDL2_INCLUDE_DIRS})
 endif()
 
 # ---------------------------------------------------------------------------
@@ -94,7 +97,7 @@ target_link_libraries(implot_lib PUBLIC imgui_lib)
 # ---------------------------------------------------------------------------
 add_executable(pepc-viewer src/main.cpp)
 target_include_directories(pepc-viewer PRIVATE src)
-target_link_libraries(pepc-viewer PRIVATE imgui_lib implot_lib)
+target_link_libraries(pepc-viewer PRIVATE imgui_lib implot_lib ${PLATFORM_LIBS})
 
 if(EMSCRIPTEN)
     target_compile_options(pepc-viewer PRIVATE ${PLATFORM_COMPILE_OPTIONS})
@@ -102,6 +105,4 @@ if(EMSCRIPTEN)
         SUFFIX ".html"
         LINK_FLAGS "${PLATFORM_LINK_OPTIONS}"
     )
-else()
-    target_link_libraries(pepc-viewer PRIVATE ${PLATFORM_LIBS})
 endif()

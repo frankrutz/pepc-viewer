@@ -176,7 +176,10 @@ int main(int /*argc*/, char** /*argv*/)
 
 #ifdef __EMSCRIPTEN__
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    // Request an OpenGL ES 2.0 context (maps to WebGL 1), which works
+    // without needing USE_WEBGL2 and is sufficient for ImGui's GL3 backend
+    // when using GLSL_VERSION "#version 100".
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #else
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);

@@ -43,12 +43,18 @@ src/main.cpp        – ImGui + ImPlot application
 
 ### Prerequisites
 
-| tool         | purpose                         |
-|--------------|---------------------------------|
-| CMake ≥ 3.16 | build system                    |
-| SDL2         | windowing (native build)        |
-| OpenGL       | rendering  (native build)       |
-| Emscripten   | WASM compilation (web build)    |
+On RHEL/AlmaLinux (and similar):
+
+```bash
+dnf install cmake make gcc-c++ git SDL2-devel mesa-libGL-devel
+```
+
+| tool         | purpose                          |
+|--------------|----------------------------------|
+| CMake ≥ 3.16 | build system                     |
+| SDL2         | windowing (native + WASM builds) |
+| OpenGL       | rendering  (native build)        |
+| Emscripten   | WASM compilation (web build)     |
 
 CMake automatically downloads ImGui and ImPlot via `FetchContent`.
 
@@ -62,8 +68,20 @@ cmake --build build -j$(nproc)
 
 ### WebAssembly / WASM build
 
+First install the Emscripten SDK and ensure it is activated in the current
+shell (see the official docs for details). Roughly:
+
 ```bash
-source /path/to/emsdk/emsdk_env.sh
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+```
+
+Then configure and build the WASM target:
+
+```bash
 emcmake cmake -B build-wasm -DCMAKE_BUILD_TYPE=Release
 cmake --build build-wasm -j$(nproc)
 # serve build-wasm/ with any HTTP server, then open pepc-viewer.html
